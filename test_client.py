@@ -5,7 +5,6 @@ import math
 
 
 def AngCal(image):
-# ==== angle1 ====================================
     max_angle = 25
     max_speed = 30
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
