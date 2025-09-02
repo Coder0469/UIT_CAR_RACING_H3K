@@ -1,0 +1,54 @@
+BUOC 1: PHAN VUNG LAI O CUNG, TAO 40GB VUNG TRONG
+
+BUOC 2: CAM USB CAI UBUNTU, VAO TRY UBUNTU
+
+BUOC 3: VAO GPARTED, DELETE PHAN VUNG 40GB
+
+BUOC 4: INSTALL UBUNTU, CHON "TRY SOMETHING ELSE"
+
+BUOC 5: CHON FREE SPACES -> "+" -> SWAP AREA -> LOGICAL -> 17000MB -> OK
+
+BUOC 6: CHON FREE SPACES -> "+" -> EXT4 -> PRIMARY -> "/" -> OK
+
+BUOC 7: CHON WINDOW BOOT MANAGER -> OK
+
+BUOC 8: INSTALL, XONG THI RESTART, RUT USB, VAO BOOT MANAGER, CHON UBUNTU 
+
+BUOC 9: TAI DOCKER: LAM THEO HUONG DAN O DIGITALOCEAN
+
+BUOC 10: CAI DRIVER CHO GPU:
+	- AMD GPU: TU DONG CAI SAN
+	- NVIDIA GPU: 
+		ubuntu-drivers devices
+		sudo ubuntu-drivers autoinstall
+		
+		sudo reboot       [QUAN TRONG!]
+
+BUOC 11: CAI TOOLKIT CHO DOCKER
+	- AMD GPU: CAI ROCM
+	- NVIDIA GPU: NVIDIA CONTAINTER TOOLKIT
+
+BUOC 12: DOWN FILE IMAGE:
+	docker pull <Ten_image>
+	
+BUOC 13: xhost +local: docker
+
+BUOC 14: LAY ID IMAGE:
+	docker image ls
+	
+BUOC 15: ADD IMAGE VAO CONTAINER:
+	- NVIDIA GPU:
+		docker run --name it-car -it -p 11000:11000 --network="host" -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all "imageid"
+	- AMD GPU:
+		docker run -it --device=/dev/kfd --device=/dev/dri --group-add video \
+  -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix \
+  --network=host \
+  --name it-car 9 "imageid"
+  
+BUOC 16: CAI VS CODE VER 1.83.1, DOWN EXTENSION "DOCKER" VA "DEV CONTAINER"
+ 
+BUOC 17: VAO DOCKER -> CONTAINER -> CHUOT PHAI -> START
+
+BUOC 18: ATTACH VISUAL STUDIO CODE -> CHON WORKSPACE
+  
+  
