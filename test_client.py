@@ -13,7 +13,8 @@ def AngCal(image):
 
     
     arr = []
-    for CHECKPOINT in range(150, 99, -25):
+
+    for CHECKPOINT in range(160, 99, -30):
 
         line_row = gray[CHECKPOINT, :]
         # print(line_row)
@@ -46,12 +47,18 @@ def AngCal(image):
             brake = brake - 1
             max_speed = 0
         else:
-            max_speed = 20
+            max_speed = 27
+            brake = brake + 1
     elif abs(arr[2] - x0) > x0*1/3:
         max_angle = 10
-        max_speed = 25
+        if brake > 0:
+            brake = brake - 1
+            max_speed = 0
+        else:
+            max_speed = 47
+            brake = brake + 1
     else:
-        if brake < 1:
+        if brake < 3:
             brake = brake + 1
         max_angle = 1
         max_speed = 50
@@ -70,7 +77,7 @@ def AngCal(image):
         angle = -max_angle
 
     
-    print(max_speed, angle)
+    # print(max_speed, angle)
     
     return angle, max_speed
 
@@ -83,13 +90,13 @@ if __name__ == "__main__":
             segment_image = GetSeg()
             # print(segment_image.shape)
 
-            # print(state)
+            print(state)
             # cv2.imshow('raw_image', raw_image)
             # cv2.imshow('segment_image', segment_image)
 
             angle, speed = AngCal(segment_image)
-            print(math.degrees(angle))
-            AVControl(speed = speed, angle = angle)
+            # print(math.degrees(angle))
+            AVControl(speed, angle)
 
             key = cv2.waitKey(1)
             if key == ord('q'):
