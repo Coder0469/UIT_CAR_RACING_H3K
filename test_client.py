@@ -3,18 +3,17 @@ import cv2
 import numpy as np
 import math
 
-
+brake = 0
 def AngCal(image):
-    max_angle = 25
-    max_speed = 30
+    global brake
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray = (gray*(255/np.max(gray))).astype(np.uint8)
+    gray = (gray*(255/max(np.max(gray),0.001))).astype(np.uint8)
     cv2.imshow("test", gray)
     h, w = gray.shape
 
     
     arr = []
-    for CHECKPOINT in range(160, 99, -60):
+    for CHECKPOINT in range(150, 99, -50):
 
         line_row = gray[CHECKPOINT, :]
         # print(line_row)
@@ -37,17 +36,25 @@ def AngCal(image):
         gray = cv2.circle(gray, (center_row, CHECKPOINT), 1, 90, 2)
         cv2.imshow('test', gray)
     
-    
+
     x0, y0 = int(w/2), h
+    gray = cv2.circle(gray, (x0, 180), 1, 90, 2)
+    cv2.imshow('test', gray)
     if abs(arr[1] - x0) > x0*2/3:
         max_angle = 25
-        max_speed = 5
-    elif abs(arr[1] - x0) > x0/3:
+        if brake > 0:
+            brake = brake - 1
+            max_speed = 1
+        else:
+            max_speed = 5
+    elif abs(arr[1] - x0) > x0*1/3:
         max_angle = 10
-        max_speed = 20
+        max_speed = 10
     else:
+        if brake < 2:
+            brake = brake + 1
         max_angle = 1
-        max_speed = 40
+        max_speed = 30
 
     steer_point = arr[0]
     x1, y1 = steer_point, CHECKPOINT
@@ -62,11 +69,11 @@ def AngCal(image):
     elif angle < -max_angle:
         angle = -max_angle
 
-    speed = max_speed
     
-    print(speed, angle)
     
-    return angle, speed
+    print(max_speed, angle)
+    
+    return angle, max_speed
 
 
 if __name__ == "__main__":
