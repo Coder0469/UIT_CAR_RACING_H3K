@@ -40,21 +40,21 @@ def AngCal(image):
     x0, y0 = int(w/2), h
     gray = cv2.circle(gray, (x0, 180), 1, 90, 2)
     cv2.imshow('test', gray)
-    if abs(arr[2] - x0) > x0*2/3 and abs(arr[1] - x0) > x0*2/3:
-        max_angle = 20
+    if abs(arr[2] - x0) > x0*2/3 and abs(arr[1] - x0) > x0*1/3:
+        max_angle = 25
         if brake > 0:
             brake = brake - 1
-            max_speed = 1
+            max_speed = 0
         else:
-            max_speed = 5
+            max_speed = 20
     elif abs(arr[2] - x0) > x0*1/3:
         max_angle = 10
-        max_speed = 10
+        max_speed = 25
     else:
-        if brake < 3:
+        if brake < 1:
             brake = brake + 1
         max_angle = 1
-        max_speed = 40
+        max_speed = 50
 
     steer_point = arr[0]
     x1, y1 = steer_point, CHECKPOINT
@@ -69,7 +69,6 @@ def AngCal(image):
     elif angle < -max_angle:
         angle = -max_angle
 
-    
     
     print(max_speed, angle)
     
