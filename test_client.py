@@ -14,7 +14,7 @@ def AngCal(image):
     
     arr = []
 
-    for CHECKPOINT in range(160, 99, -30):
+    for CHECKPOINT in range(160, 92, -33):
 
         line_row = gray[CHECKPOINT, :]
         # print(line_row)
@@ -41,29 +41,32 @@ def AngCal(image):
     x0, y0 = int(w/2), h
     gray = cv2.circle(gray, (x0, 180), 1, 90, 2)
     cv2.imshow('test', gray)
-    if abs(arr[2] - x0) > x0*2/3 and abs(arr[1] - x0) > x0*1/3:
+    steer_point = arr[0]
+    if abs(arr[2] - x0) == x0 and abs(arr[1] - x0) >= 4/5* x0 and abs(arr[0] - x0) >= x0*4/5:
+        max_speed = -90
+        max_angle = 25
+    elif abs(arr[2] - x0) > x0*2/3 and abs(arr[1] - x0) > x0*1/3:
         max_angle = 25
         if brake > 0:
             brake = brake - 1
             max_speed = 0
         else:
             max_speed = 27
-            brake = brake + 1
-    elif abs(arr[2] - x0) > x0*1/3:
+    elif abs(arr[2] - x0) > x0*1/4:
         max_angle = 10
         if brake > 0:
             brake = brake - 1
             max_speed = 0
         else:
-            max_speed = 47
-            brake = brake + 1
+            max_speed = 30
     else:
-        if brake < 3:
+        if brake < 9:
             brake = brake + 1
         max_angle = 1
-        max_speed = 50
+        max_speed = 60
+        steer_point = arr[2]
 
-    steer_point = arr[0]
+    
     x1, y1 = steer_point, CHECKPOINT
 
 
@@ -77,13 +80,15 @@ def AngCal(image):
         angle = -max_angle
 
     
-    # print(max_speed, angle)
+    print(max_speed, angle)
     
     return angle, max_speed
 
 
 if __name__ == "__main__":
     try:
+        sum = 0
+        count = 0
         while True:
             state = GetStatus()
             raw_image = GetRaw()
@@ -97,11 +102,15 @@ if __name__ == "__main__":
             angle, speed = AngCal(segment_image)
             # print(math.degrees(angle))
             AVControl(speed, angle)
+            sum = sum + speed
+            count = count + 1
 
             key = cv2.waitKey(1)
             if key == ord('q'):
                 break
-
+        
     finally:
+        sum = sum / count
         print('closing socket')
+        print('avg speed: ', sum)
         CloseSocket()
