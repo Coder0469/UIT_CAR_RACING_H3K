@@ -61,9 +61,9 @@ def AngCal(image):
             max_speed = 30
     else:
         if brake < 9:
-            brake = brake + 1
-        max_angle = 1
-        max_speed = 60
+            brake = brake + 3
+        max_angle = 0.3
+        max_speed = 65
         steer_point = arr[2]
 
     
