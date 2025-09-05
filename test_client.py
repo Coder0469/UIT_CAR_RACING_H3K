@@ -54,12 +54,12 @@ def AngCal(image):
             max_speed = 30
             brake = brake + 1
     elif abs(arr[2] - x0) > x0*1/5:
-        max_angle = 25
+        max_angle = 15
         if brake > 0:
             brake = brake - 1
             max_speed = 0
         else:
-            max_speed = 35
+            max_speed = 40
     else:
         if brake < 9:
             brake = brake + 3
