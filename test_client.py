@@ -14,7 +14,7 @@ def AngCal(image):
     
     arr = []
 
-    for CHECKPOINT in range(160, 92, -33):
+    for CHECKPOINT in range(155, 92, -30):
 
         line_row = gray[CHECKPOINT, :]
         # print(line_row)
@@ -42,28 +42,28 @@ def AngCal(image):
     gray = cv2.circle(gray, (x0, 180), 1, 90, 2)
     cv2.imshow('test', gray)
     steer_point = arr[0]
-    if abs(arr[2] - x0) == x0 and abs(arr[1] - x0) >= 4/5* x0 and abs(arr[0] - x0) >= x0*3/5:
+    if abs(arr[2] - x0) == x0 and abs(arr[1] - x0) >= 4/5* x0 and abs(arr[0] - x0) >= x0*1/2:
         max_speed = -90
         max_angle = 25
-    elif abs(arr[2] - x0) > x0*2/3 and abs(arr[1] - x0) > x0*1/4:
+    elif abs(arr[2] - x0) > x0*2/3 and abs(arr[1] - x0) > x0*2/4:
         max_angle = 25
         if brake > 0:
             brake = brake - 1
             max_speed = 0
         else:
-            max_speed = 30
-            brake = brake + 1
+            max_speed = 15
+            # brake = brake + 1
     elif abs(arr[2] - x0) > x0*1/5:
-        max_angle = 15
+        max_angle = 5
         if brake > 0:
             brake = brake - 1
             max_speed = 0
         else:
-            max_speed = 40
+            max_speed = 35
     else:
-        if brake < 9:
-            brake = brake + 3
         max_angle = 0.3
+        if brake < 9:
+            brake = brake + 1
         max_speed = 65
         steer_point = arr[2]
 
