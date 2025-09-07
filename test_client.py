@@ -4,8 +4,10 @@ import numpy as np
 import math
 
 brake = 0
+brake1 = 0
 def AngCal(image):
     global brake
+    global brake1
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = (gray*(255/max(np.max(gray),0.001))).astype(np.uint8)
     cv2.imshow("test", gray)
@@ -14,7 +16,7 @@ def AngCal(image):
     
     arr = []
 
-    for CHECKPOINT in range(155, 92, -30):
+    for CHECKPOINT in range(160, 92, -33):
 
         line_row = gray[CHECKPOINT, :]
         # print(line_row)
@@ -43,29 +45,35 @@ def AngCal(image):
     cv2.imshow('test', gray)
     steer_point = arr[0]
     if abs(arr[2] - x0) == x0 and abs(arr[1] - x0) >= 4/5* x0 and abs(arr[0] - x0) >= x0*1/2:
-        max_speed = -90
+        max_speed = -10
         max_angle = 25
-    elif abs(arr[2] - x0) > x0*2/3 and abs(arr[1] - x0) > x0*2/4:
-        max_angle = 25
-        if brake > 0:
-            brake = brake - 1
-            max_speed = 0
-        else:
-            max_speed = 15
-            # brake = brake + 1
-    elif abs(arr[2] - x0) > x0*1/5:
+    elif abs(arr[2] - x0) < x0*1/5 and abs(arr[1] - x0) < x0*1/4:
+        max_angle = 0.3
+        if brake < 9:
+            brake = brake + 1
+        max_speed = 65
+        steer_point = arr[2]
+    elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.24:
         max_angle = 5
         if brake > 0:
             brake = brake - 1
             max_speed = 0
         else:
             max_speed = 35
+            if brake1 < 4:
+                brake1 = brake1 + 1
     else:
-        max_angle = 0.3
-        if brake < 9:
-            brake = brake + 1
-        max_speed = 65
-        steer_point = arr[2]
+        max_angle = 25
+        if brake > 0:
+            brake = brake - 1
+            max_speed = 0
+        elif brake1 > 0:
+            brake1 = brake1 - 1
+            max_speed = 0
+        else:
+            max_speed = 30
+            # brake = brake + 1
+
 
     
     x1, y1 = steer_point, CHECKPOINT
@@ -92,7 +100,7 @@ if __name__ == "__main__":
         count = 0
         while True:
             state = GetStatus()
-            raw_image = GetRaw()
+            # raw_image = GetRaw()
             segment_image = GetSeg()
             # print(segment_image.shape)
 
