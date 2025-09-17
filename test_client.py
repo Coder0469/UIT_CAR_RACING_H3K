@@ -14,18 +14,20 @@ def ComputeAngle(steer_point,steer_height):
     x0, y0 = 160, 180
     value = (x1-x0)/(y0-y1)
     angle = math.degrees(math.atan(value))
-    if angle > 2:
+    if angle >= 2 and angle <= 10:
         if right_accumulator < 8:
             right_accumulator = right_accumulator + 1
         if left_accumulator > 0:
-            angle = angle*0.5
+            angle = angle*0.065
             print("!")
-    if angle < -2:
+            
+    if angle <= -2 and angle >= -10:
         if left_accumulator < 8:
             left_accumulator = left_accumulator + 1
         if right_accumulator > 0:
-            angle = angle*0.5
+            angle = angle*0.065
             print("@")
+            
     return angle
 
 def AngCal(image):
@@ -81,7 +83,7 @@ def AngCal(image):
     if abs(arr[2] - x0) == x0 and abs(arr[1] - x0) >= 4/5* x0 and abs(arr[0] - x0) >= x0*1/2:
         max_speed = -10
         max_angle = 25
-    elif abs(arr[2] - x0) < x0*0.2 and abs(arr[2] - arr[1]) < x0*0.2 and abs(arr[1] - arr[0]) < x0*0.2:
+    elif abs(arr[2] - x0) < x0*0.4 and abs(arr[2] - arr[1]) < x0*0.2 and abs(arr[1] - arr[0]) < x0*0.2:
         max_angle = 0.3
         if brake < 9:
             brake = brake + 1
@@ -99,7 +101,7 @@ def AngCal(image):
             if brake1 < 4:
                 brake1 = brake1 + 1
     else:
-        max_angle = 10
+        max_angle = 12
         if brake > 0:
             brake = brake - 1
             max_speed = 0
@@ -109,7 +111,7 @@ def AngCal(image):
             max_speed = 0
             # max_angle = 1
         else:
-            max_speed = 25
+            max_speed = 30
             # brake = brake + 1
 
 
