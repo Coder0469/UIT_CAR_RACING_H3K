@@ -34,7 +34,9 @@ def AngCal(image):
             elif y == 255:
                 max_x = x
 
-        center_row = int((max_x+min_x)/2)
+            center_row = int((max_x+min_x)/2)
+            #Change steer point position
+            if CHECKPOINT == 160 : center_row = int(max_x * 0.6)
         arr.append(center_row)
         gray = cv2.circle(gray, (center_row, CHECKPOINT), 1, 90, 2)
         cv2.imshow('test', gray)
@@ -51,7 +53,7 @@ def AngCal(image):
         max_angle = 0.3
         if brake < 9:
             brake = brake + 1
-        max_speed = 65
+        max_speed = 60
         steer_point = arr[2]
     elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.24:
         max_angle = 5
@@ -63,7 +65,7 @@ def AngCal(image):
             if brake1 < 4:
                 brake1 = brake1 + 1
     else:
-        max_angle = 25
+        max_angle = 10
         if brake > 0:
             brake = brake - 1
             max_speed = 0
@@ -71,7 +73,7 @@ def AngCal(image):
             brake1 = brake1 - 1
             max_speed = 0
         else:
-            max_speed = 30
+            max_speed = 20
             # brake = brake + 1
 
 
