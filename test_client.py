@@ -5,6 +5,29 @@ import math
 
 brake = 0
 brake1 = 0
+right_accumulator = 0
+left_accumulator = 0
+def ComputeAngle(steer_point,steer_height):
+    global right_accumulator
+    global left_accumulator
+    x1, y1 = steer_point, steer_height
+    x0, y0 = 160, 180
+    value = (x1-x0)/(y0-y1)
+    angle = math.degrees(math.atan(value))
+    if angle > 2:
+        if right_accumulator < 8:
+            right_accumulator = right_accumulator + 1
+        if left_accumulator > 0:
+            angle = angle*0.5
+            print("!")
+    if angle < -2:
+        if left_accumulator < 8:
+            left_accumulator = left_accumulator + 1
+        if right_accumulator > 0:
+            angle = angle*0.5
+            print("@")
+    return angle
+
 def AngCal(image):
     global brake
     global brake1
@@ -26,17 +49,22 @@ def AngCal(image):
         flag = True
         min_x = 0
         max_x = 0
-        
+        first_white = False
         for x, y in enumerate(line_row):
             if y == 255 and flag:
                 flag = False
                 min_x = x
+                if x < w*0.1 and CHECKPOINT == 160-33:
+                    first_white = True
             elif y == 255:
                 max_x = x
 
-            center_row = int((max_x+min_x)/2)
+            center_row = int(min_x + (max_x-min_x)*0.5)
             #Change steer point position
-            if CHECKPOINT == 160 : center_row = int(max_x * 0.6)
+            if CHECKPOINT == 160:
+                center_row = int(min_x + (max_x - min_x)*0.6)
+            if CHECKPOINT < 100: 
+                center_row = int(min_x + (max_x - min_x)*0.85)
         arr.append(center_row)
         gray = cv2.circle(gray, (center_row, CHECKPOINT), 1, 90, 2)
         cv2.imshow('test', gray)
@@ -45,21 +73,27 @@ def AngCal(image):
     x0, y0 = int(w/2), h
     gray = cv2.circle(gray, (x0, 180), 1, 90, 2)
     cv2.imshow('test', gray)
-    steer_point = arr[0]
+    if first_white:
+        steer_point = arr[0]*0.45
+    else:
+        steer_point = arr[0]
+    steer_height = 94
     if abs(arr[2] - x0) == x0 and abs(arr[1] - x0) >= 4/5* x0 and abs(arr[0] - x0) >= x0*1/2:
         max_speed = -10
         max_angle = 25
-    elif abs(arr[2] - x0) < x0*1/5 and abs(arr[1] - x0) < x0*1/4:
+    elif abs(arr[2] - x0) < x0*0.2 and abs(arr[2] - arr[1]) < x0*0.2 and abs(arr[1] - arr[0]) < x0*0.2:
         max_angle = 0.3
         if brake < 9:
             brake = brake + 1
         max_speed = 60
         steer_point = arr[2]
+        steer_height = 160
     elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.24:
         max_angle = 5
         if brake > 0:
             brake = brake - 1
             max_speed = 0
+            max_angle = 1
         else:
             max_speed = 35
             if brake1 < 4:
@@ -69,20 +103,21 @@ def AngCal(image):
         if brake > 0:
             brake = brake - 1
             max_speed = 0
+            max_angle = 1
         elif brake1 > 0:
             brake1 = brake1 - 1
             max_speed = 0
+            # max_angle = 1
         else:
-            max_speed = 20
+            max_speed = 25
             # brake = brake + 1
 
 
     
-    x1, y1 = steer_point, CHECKPOINT
+    angle = ComputeAngle(steer_point, steer_height)
 
 
-    value = (x1-x0)/(y0-y1)
-    angle = math.degrees(math.atan(value))
+
     # print(steering)
         
     if angle > max_angle:
