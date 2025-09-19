@@ -6,7 +6,9 @@ import math
 brake = 0
 brake1 = 0
 right_accumulator = 0
-left_accumulator = 0
+left_accumulator = 8
+turn_count = 0
+turn_flag = 1
 def ComputeAngle(steer_point,steer_height):
     global right_accumulator
     global left_accumulator
@@ -14,25 +16,31 @@ def ComputeAngle(steer_point,steer_height):
     x0, y0 = 160, 180
     value = (x1-x0)/(y0-y1)
     angle = math.degrees(math.atan(value))
-    if angle >= 2 and angle <= 10:
-        if right_accumulator < 8:
+    if angle >= 1 and angle <= 15:
+        if right_accumulator < 6:
             right_accumulator = right_accumulator + 1
-        if left_accumulator > 0:
-            angle = angle*0.065
-            print("!")
-            
-    if angle <= -2 and angle >= -10:
-        if left_accumulator < 8:
+
+        angle = angle*0.01
+
+    elif angle <= -1 and angle >= -15:
+        if left_accumulator < 6:
             left_accumulator = left_accumulator + 1
-        if right_accumulator > 0:
-            angle = angle*0.065
-            print("@")
-            
+
+        angle = angle*0.01
+
+    if angle > 15 and left_accumulator > 0:
+        angle = angle*0.1
+        left_accumulator = left_accumulator-1
+    elif angle < -15 and right_accumulator > 0:
+        angle = angle*0.1
+        right_accumulator = right_accumulator-1
     return angle
 
 def AngCal(image):
     global brake
     global brake1
+    global turn_count
+    global turn_flag
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = (gray*(255/max(np.max(gray),0.001))).astype(np.uint8)
     cv2.imshow("test", gray)
@@ -41,7 +49,7 @@ def AngCal(image):
     
     arr = []
 
-    for CHECKPOINT in range(160, 92, -33):
+    for CHECKPOINT in range(160, 92, -30):
 
         line_row = gray[CHECKPOINT, :]
         # print(line_row)
@@ -82,38 +90,47 @@ def AngCal(image):
     steer_height = 94
     if abs(arr[2] - x0) == x0 and abs(arr[1] - x0) >= 4/5* x0 and abs(arr[0] - x0) >= x0*1/2:
         max_speed = -10
-        max_angle = 25
-    elif abs(arr[2] - x0) < x0*0.4 and abs(arr[2] - arr[1]) < x0*0.2 and abs(arr[1] - arr[0]) < x0*0.2:
-        max_angle = 0.3
-        if brake < 9:
-            brake = brake + 1
-        max_speed = 60
-        steer_point = arr[2]
-        steer_height = 160
-    elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.24:
-        max_angle = 5
-        if brake > 0:
-            brake = brake - 1
-            max_speed = 0
-            max_angle = 1
+        if turn_count < 8 and turn_flag == 1:
+            max_angle = 25
+            turn_count = turn_count + 1
         else:
-            max_speed = 35
-            if brake1 < 4:
-                brake1 = brake1 + 1
+            max_angle = 0
+            turn_count = 0
+            turn_flag = 0
+    # elif abs(arr[2] - x0) < x0*0.4 and abs(arr[2] - arr[1]) < x0*0.2 and abs(arr[1] - arr[0]) < x0*0.2:
+    #     turn_flag = 1
+    #     max_angle = 0.3
+    #     if brake < 9:
+    #         brake = brake + 1
+    #     max_speed = 60
+    #     steer_point = arr[2]
+    elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.24:
+        turn_flag = 1
+        max_angle = 6
+        # if brake > 0:
+        #     brake = brake - 1
+        #     max_speed = 0
+        #     max_angle = 1
+        # else:
+        max_speed = 40
+        if brake1 < 3:
+            brake1 = brake1 + 1
     else:
-        max_angle = 12
-        if brake > 0:
-            brake = brake - 1
-            max_speed = 0
-            max_angle = 1
-        elif brake1 > 0:
+        turn_flag = 1
+        max_angle = 15
+        # if brake > 0:
+        #     brake = brake - 1
+        #     max_speed = 0
+        #     max_angle = 1
+        if brake1 > 0:
             brake1 = brake1 - 1
             max_speed = 0
             # max_angle = 1
         else:
-            max_speed = 30
+            max_speed = 25
             # brake = brake + 1
 
+    
 
     
     angle = ComputeAngle(steer_point, steer_height)
