@@ -106,6 +106,7 @@ def AngCal(image):
     #     steer_point = arr[2]
     elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.24:
         turn_flag = 1
+        turn_count = 0
         max_angle = 6
         # if brake > 0:
         #     brake = brake - 1
@@ -117,6 +118,7 @@ def AngCal(image):
             brake1 = brake1 + 1
     else:
         turn_flag = 1
+        turn_count = 0
         max_angle = 15
         # if brake > 0:
         #     brake = brake - 1
