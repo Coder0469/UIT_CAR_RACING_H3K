@@ -20,13 +20,13 @@ def ComputeAngle(steer_point,steer_height):
         if right_accumulator < 6:
             right_accumulator = right_accumulator + 1
 
-        angle = angle*0.01
+        angle = angle*0.005
 
     elif angle <= -1 and angle >= -15:
         if left_accumulator < 6:
             left_accumulator = left_accumulator + 1
 
-        angle = angle*0.01
+        angle = angle*0.005
 
     if angle > 15 and left_accumulator > 0:
         angle = angle*0.1
