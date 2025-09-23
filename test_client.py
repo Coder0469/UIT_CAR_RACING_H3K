@@ -2,6 +2,9 @@ from client_lib import GetStatus,GetRaw,GetSeg,AVControl,CloseSocket
 import cv2
 import numpy as np
 import math
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+loaded_model = load_model('my_model.keras')
 
 brake = 0
 brake1 = 0
@@ -41,10 +44,11 @@ def AngCal(image):
     global brake1
     global turn_count
     global turn_flag
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray = (gray*(255/max(np.max(gray),0.001))).astype(np.uint8)
-    cv2.imshow("test", gray)
-    h, w = gray.shape
+    # gray = cv2.cvtColor(image, 0)
+    gray = image
+    # gray = (gray*(255/max(np.max(gray),0.001))).astype(np.uint8)
+    cv2.imshow("test", image)
+    h, w = 180,320
 
     
     arr = []
@@ -163,17 +167,27 @@ if __name__ == "__main__":
 
         while True:
             state = GetStatus()
-            # raw_image = GetRaw()
-            segment_image = GetSeg()
+            raw_image = GetRaw()
+            img = cv2.resize(raw_image,(128,128))
+            predicted_img = loaded_model.predict(img[np.newaxis, ...])
+            predicted_img = tf.argmax(predicted_img[0], axis=-1)
+
+            predicted_img_np = predicted_img.numpy().astype(np.uint8)
+            predicted_img_np_rs = cv2.resize(predicted_img_np,(320,180))
+            matrix = np.ones((180,320),dtype=np.uint8)*255
+            predicted_img_np_rs = np.multiply(predicted_img_np_rs,matrix)
+            # segment_image = GetSeg()
             # print(segment_image.shape)
 
             print(state)
-            # cv2.imshow('raw_image', raw_image)
+            cv2.imshow('raw_image', raw_image)
+            # cv2.imshow('resized', img)
+            # cv2.imshow('predicted',predicted_img)
             # cv2.imshow('segment_image', segment_image)
-
-            angle, speed = AngCal(segment_image)
+            print(predicted_img_np)
+            # angle, speed = AngCal(predicted_img_np_rs)
             # print(math.degrees(angle))
-            AVControl(speed, angle)
+            # AVControl(speed, angle)
 
 
             key = cv2.waitKey(1)
