@@ -17,7 +17,7 @@ def ComputeAngle(steer_point,steer_height):
     value = (x1-x0)/(y0-y1)
     angle = math.degrees(math.atan(value))
     if angle >= 1 and angle <= 15:
-        if right_accumulator < 6:
+        if right_accumulator < 4:
             right_accumulator = right_accumulator + 1
 
         angle = angle*0.005
@@ -26,13 +26,13 @@ def ComputeAngle(steer_point,steer_height):
         if left_accumulator < 6:
             left_accumulator = left_accumulator + 1
 
-        angle = angle*0.005
+        angle = angle*0.1
 
     if angle > 15 and left_accumulator > 0:
         angle = angle*0.1
         left_accumulator = left_accumulator-1
     elif angle < -15 and right_accumulator > 0:
-        angle = angle*0.1
+        angle = angle*0.005
         right_accumulator = right_accumulator-1
     return angle
 
@@ -64,7 +64,7 @@ def AngCal(image):
             if y == 255 and flag:
                 flag = False
                 min_x = x
-                if x < w*0.1 and CHECKPOINT == 160-33:
+                if x < w*0.1 and CHECKPOINT == 160-30:
                     first_white = True
             elif y == 255:
                 max_x = x
@@ -73,7 +73,9 @@ def AngCal(image):
             #Change steer point position
             if CHECKPOINT == 160:
                 center_row = int(min_x + (max_x - min_x)*0.6)
-            if CHECKPOINT < 100: 
+            elif CHECKPOINT == 130:
+                center_row = int(min_x + (max_x - min_x)*0.7)
+            elif CHECKPOINT <= 100: 
                 center_row = int(min_x + (max_x - min_x)*0.85)
         arr.append(center_row)
         gray = cv2.circle(gray, (center_row, CHECKPOINT), 1, 90, 2)
@@ -84,7 +86,7 @@ def AngCal(image):
     gray = cv2.circle(gray, (x0, 180), 1, 90, 2)
     cv2.imshow('test', gray)
     if first_white:
-        steer_point = arr[0]*0.45
+        steer_point = arr[0]*0.7
     else:
         steer_point = arr[0]
     steer_height = 94
@@ -97,14 +99,14 @@ def AngCal(image):
             max_angle = 0
             turn_count = 0
             turn_flag = 0
-    # elif abs(arr[2] - x0) < x0*0.4 and abs(arr[2] - arr[1]) < x0*0.2 and abs(arr[1] - arr[0]) < x0*0.2:
-    #     turn_flag = 1
-    #     max_angle = 0.3
-    #     if brake < 9:
-    #         brake = brake + 1
-    #     max_speed = 60
-    #     steer_point = arr[2]
-    elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.24:
+    elif arr[1] > x0*1.3 and arr[2] < x0*1.2 and arr[2] > x0*0.8:
+        turn_flag = 1
+        max_angle = 0.3
+        if brake < 3:
+            brake = brake + 1
+        max_speed = 30
+        steer_point = arr[2]*0.8
+    elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.28:
         turn_flag = 1
         turn_count = 0
         max_angle = 6
@@ -119,7 +121,11 @@ def AngCal(image):
     else:
         turn_flag = 1
         turn_count = 0
-        max_angle = 15
+        max_angle = 14
+        if steer_point < x0:
+            steer_point = steer_point*1.02
+        else:
+            steer_point = steer_point*0.98
         # if brake > 0:
         #     brake = brake - 1
         #     max_speed = 0
@@ -154,8 +160,7 @@ def AngCal(image):
 
 if __name__ == "__main__":
     try:
-        sum = 0
-        count = 0
+
         while True:
             state = GetStatus()
             # raw_image = GetRaw()
@@ -169,15 +174,14 @@ if __name__ == "__main__":
             angle, speed = AngCal(segment_image)
             # print(math.degrees(angle))
             AVControl(speed, angle)
-            sum = sum + speed
-            count = count + 1
+
 
             key = cv2.waitKey(1)
             if key == ord('q'):
                 break
         
     finally:
-        sum = sum / count
+
         print('closing socket')
-        print('avg speed: ', sum)
+
         CloseSocket()
