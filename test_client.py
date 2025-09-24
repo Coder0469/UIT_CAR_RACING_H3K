@@ -2,9 +2,6 @@ from client_lib import GetStatus,GetRaw,GetSeg,AVControl,CloseSocket
 import cv2
 import numpy as np
 import math
-import tensorflow as tf
-from tensorflow.keras.models import load_model
-loaded_model = load_model('my_model.keras')
 
 brake = 0
 brake1 = 0
@@ -12,6 +9,7 @@ right_accumulator = 0
 left_accumulator = 8
 turn_count = 0
 turn_flag = 1
+straight_count = 0
 def ComputeAngle(steer_point,steer_height):
     global right_accumulator
     global left_accumulator
@@ -29,14 +27,16 @@ def ComputeAngle(steer_point,steer_height):
         if left_accumulator < 6:
             left_accumulator = left_accumulator + 1
 
-        angle = angle*0.1
+        angle = angle*0.005
 
-    if angle > 15 and left_accumulator > 0:
+    if angle > 15 and left_accumulator > 0 and abs(steer_point - x0) < x0*0.1:
         angle = angle*0.1
         left_accumulator = left_accumulator-1
-    elif angle < -15 and right_accumulator > 0:
-        angle = angle*0.005
+        print('right')
+    elif angle < -15 and right_accumulator > 0 and abs(steer_point - x0) < x0*0.15:
+        angle = angle*0.1
         right_accumulator = right_accumulator-1
+        print('left')
     return angle
 
 def AngCal(image):
@@ -44,11 +44,11 @@ def AngCal(image):
     global brake1
     global turn_count
     global turn_flag
-    # gray = cv2.cvtColor(image, 0)
-    gray = image
-    # gray = (gray*(255/max(np.max(gray),0.001))).astype(np.uint8)
-    cv2.imshow("test", image)
-    h, w = 180,320
+    global straight_count
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = (gray*(255/max(np.max(gray),0.001))).astype(np.uint8)
+    cv2.imshow("test", gray)
+    h, w = gray.shape
 
     
     arr = []
@@ -105,11 +105,13 @@ def AngCal(image):
             turn_flag = 0
     elif arr[1] > x0*1.3 and arr[2] < x0*1.2 and arr[2] > x0*0.8:
         turn_flag = 1
-        max_angle = 0.3
+        turn_count = 0
+        max_angle = 5
         if brake < 3:
             brake = brake + 1
         max_speed = 30
         steer_point = arr[2]*0.8
+        straight_count = 2
     elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.28:
         turn_flag = 1
         turn_count = 0
@@ -119,17 +121,17 @@ def AngCal(image):
         #     max_speed = 0
         #     max_angle = 1
         # else:
-        max_speed = 40
-        if brake1 < 3:
+        max_speed = 45
+        if brake1 < 4:
             brake1 = brake1 + 1
     else:
         turn_flag = 1
         turn_count = 0
         max_angle = 14
         if steer_point < x0:
-            steer_point = steer_point*1.02
+            steer_point = steer_point + 5
         else:
-            steer_point = steer_point*0.98
+            steer_point = steer_point - 6
         # if brake > 0:
         #     brake = brake - 1
         #     max_speed = 0
@@ -141,9 +143,11 @@ def AngCal(image):
         else:
             max_speed = 25
             # brake = brake + 1
+        
 
-    
-
+    if straight_count> 0:
+        straight_count = straight_count - 1
+        max_angle = 0.2
     
     angle = ComputeAngle(steer_point, steer_height)
 
@@ -167,27 +171,17 @@ if __name__ == "__main__":
 
         while True:
             state = GetStatus()
-            raw_image = GetRaw()
-            img = cv2.resize(raw_image,(128,128))
-            predicted_img = loaded_model.predict(img[np.newaxis, ...])
-            predicted_img = tf.argmax(predicted_img[0], axis=-1)
-
-            predicted_img_np = predicted_img.numpy().astype(np.uint8)
-            predicted_img_np_rs = cv2.resize(predicted_img_np,(320,180))
-            matrix = np.ones((180,320),dtype=np.uint8)*255
-            predicted_img_np_rs = np.multiply(predicted_img_np_rs,matrix)
-            # segment_image = GetSeg()
+            # raw_image = GetRaw()
+            segment_image = GetSeg()
             # print(segment_image.shape)
 
             print(state)
-            cv2.imshow('raw_image', raw_image)
-            # cv2.imshow('resized', img)
-            # cv2.imshow('predicted',predicted_img)
+            # cv2.imshow('raw_image', raw_image)
             # cv2.imshow('segment_image', segment_image)
-            print(predicted_img_np)
-            # angle, speed = AngCal(predicted_img_np_rs)
+
+            angle, speed = AngCal(segment_image)
             # print(math.degrees(angle))
-            # AVControl(speed, angle)
+            AVControl(speed, angle)
 
 
             key = cv2.waitKey(1)
