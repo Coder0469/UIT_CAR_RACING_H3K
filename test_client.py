@@ -29,11 +29,11 @@ def ComputeAngle(steer_point,steer_height):
 
         angle = angle*0.005
 
-    if angle > 15 and left_accumulator > 0 and abs(steer_point - x0) < x0*0.1:
+    if angle > 15 and left_accumulator > 0 and abs(steer_point - x0) < x0*0.2:
         angle = angle*0.1
         left_accumulator = left_accumulator-1
         print('right')
-    elif angle < -15 and right_accumulator > 0 and abs(steer_point - x0) < x0*0.15:
+    elif angle < -15 and right_accumulator > 0 and abs(steer_point - x0) < x0*0.2:
         angle = angle*0.1
         right_accumulator = right_accumulator-1
         print('left')
@@ -94,7 +94,7 @@ def AngCal(image):
     else:
         steer_point = arr[0]
     steer_height = 94
-    if abs(arr[2] - x0) == x0 and abs(arr[1] - x0) >= 4/5* x0 and abs(arr[0] - x0) >= x0*1/2:
+    if abs(arr[2] - x0) == x0 and abs(arr[1] - x0) >= 4/5* x0 and abs(arr[0] - x0) >= x0*2/3:
         max_speed = -10
         if turn_count < 8 and turn_flag == 1:
             max_angle = 25
@@ -111,7 +111,7 @@ def AngCal(image):
             brake = brake + 1
         max_speed = 30
         steer_point = arr[2]*0.8
-        straight_count = 2
+        straight_count = 4
     elif abs(arr[2] - x0) < x0*1/2 or abs(arr[1] - x0) < x0*0.28:
         turn_flag = 1
         turn_count = 0
@@ -121,17 +121,15 @@ def AngCal(image):
         #     max_speed = 0
         #     max_angle = 1
         # else:
-        max_speed = 45
+        max_speed = 42
         if brake1 < 4:
             brake1 = brake1 + 1
     else:
         turn_flag = 1
         turn_count = 0
-        max_angle = 14
-        if steer_point < x0:
-            steer_point = steer_point + 5
-        else:
-            steer_point = steer_point - 6
+        max_angle = 25
+        # if steer_point > x0:
+        #     steer_point = steer_point*0.96
         # if brake > 0:
         #     brake = brake - 1
         #     max_speed = 0
