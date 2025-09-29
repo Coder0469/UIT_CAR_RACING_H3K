@@ -137,7 +137,7 @@ def AngCal(image):
         if brake1 > 0:
             brake1 = brake1 - 1
             max_speed = 0
-            # max_angle = 1
+            max_angle = 10
         else:
             max_speed = 25
             # brake = brake + 1
